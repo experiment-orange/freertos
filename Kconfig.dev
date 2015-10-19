@@ -1,0 +1,5 @@
+menu "FreeRTOS configuration"
+
+source "freertos/Kconfig"
+
+endmenu

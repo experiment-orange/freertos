@@ -2,27 +2,34 @@
 
 all : libfreertos.a
 
-depends makedepends :
-	@echo freertos-config
+check checkdepends depends makedepends :
 
-check checkdepends :
+options :
+	echo !strip
 
 SOURCE_DIR := ../freertos-src/FreeRTOS/Source
 DESTDIR ?= /
 
-CFLAGS += -I${SOURCE_DIR}/include
+CFLAGS += -I. -I${SOURCE_DIR}/include
 SYSROOT := $(shell ${CC} ${CFLAGS} -print-sysroot)
 MULTIOS := $(shell ${CC} ${CFLAGS} -print-multi-os-directory)
 
 ALL_OBJECTS := $(addprefix ${SOURCE_DIR}/,croutine.o event_groups.o list.o queue.o tasks.o timers.o)
 
-%.o : %.c
+../.config :
+	@echo "../.config file must be present"
+	@exit 1
+
+FreeRTOSConfig.h : ../.config
+	@./generator <$^ >$@
+
+%.o : FreeRTOSConfig.h %.c
 	${CC} ${CFLAGS} -c -o $@ $<
 
 libfreertos.a : ${ALL_OBJECTS}
 	${AR} -cr $@ $^
 
-ALL_INCLUDES := $(addprefix ${SOURCE_DIR}/include/, FreeRTOS.h StackMacros.h croutine.h deprecated_definitions.h event_groups.h list.h mpu_wrappers.h portable.h projdefs.h queue.h semphr.h stdint.readme task.h timers.h)
+ALL_INCLUDES := $(addprefix ${SOURCE_DIR}/include/, FreeRTOS.h StackMacros.h croutine.h deprecated_definitions.h event_groups.h list.h mpu_wrappers.h portable.h projdefs.h queue.h semphr.h stdint.readme task.h timers.h) FreeRTOSConfig.h portmacro.h
 
 install : libfreertos.a
 	install -m755 -d ${DESTDIR}${SYSROOT}/lib/${MULTIOS}

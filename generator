@@ -1,0 +1,53 @@
+#!/usr/bin/env perl
+
+use warnings;
+use strict;
+use feature 'say';
+
+sub yn {
+    my $flag = shift;
+    return "1" if defined $flag and $flag eq "y";
+    return "0";
+}
+
+sub value {
+    my $flag = shift;
+    my $cb = shift;
+    $cb->($flag) if defined $flag;
+}
+
+my %flags;
+
+foreach (<STDIN>) {
+    next if m/^#/;
+    $flags{$1} = $2 if m/^(\w+)=(.+)$/;
+}
+
+say "#ifndef FREERTOS_CONFIG_H";
+say "#define FREERTOS_CONFIG_H";
+say "";
+say "#define configUSE_PREEMPTION ".yn($flags{'CONFIG_FREERTOS_PREEMPTIVE_SCHEDULER'});
+say "#define configUSE_IDLE_HOOK ".yn($flags{'CONFIG_FREERTOS_USE_IDLE_HOOK'});
+say "#define configUSE_TICK_HOOK ".yn($flags{'CONFIG_FREERTOS_USE_TICK_HOOK'});
+value($flags{'CONFIG_FREERTOS_CPU_CLOCK_HZ'}, sub {printf("#define configCPU_CLOCK_HZ ( ( unsigned long ) ( %d ) )\n", shift)});
+value($flags{'CONFIG_FREERTOS_TICK_RATE_HZ'}, sub {sprintf("#define configTICK_RATE_HZ ( ( TickType_t ) ( %d ) )\n", shift)});
+value($flags{'CONFIG_FREERTOS_MINIMAL_STACK_SIZE'}, sub {printf("#define configMINIMAL_STACK_SIZE ( ( unsigned short ) ( %d ) )\n", shift)});
+value($flags{'CONFIG_FREERTOS_TOTAL_HEAP_SIZE'}, sub {printf("#define configTOTAL_HEAP_SIZE ( ( size_t ) ( %d ) )\n", shift)});
+value($flags{'CONFIG_FREERTOS_MAX_TASK_NAME_LEN'}, sub {printf("#define configMAX_TASK_NAME_LEN ( %d )\n", shift)});
+say "#define configUSE_TRACE_FACILITY ".yn($flags{'CONFIG_FREERTOS_USE_TRACE_FACILITY'});
+say "#define configUSE_16_BIT_TICKS ".yn($flags{'CONFIG_FREERTOS_USE_16_BIT_TICKS'});
+say "#define configIDLE_SHOULD_YIELD ".yn($flags{'CONFIG_FREERTOS_IDLE_SHOULD_YIELD'});
+say "#define configUSE_CO_ROUTINES ".yn($flags{'CONFIG_FREERTOS_USE_CO_ROUTINES'});
+value($flags{'CONFIG_FREERTOS_MAX_PRIORITIES'}, sub {printf("#define configMAX_PRIORITIES ( %d )\n", shift)});
+value($flags{'CONFIG_FREERTOS_MAX_CO_ROUTINE_PRIORITIES'}, sub {printf("#define configMAX_CO_ROUTINE_PRIORITIES ( %d )\n", shift)});
+value($flags{'CONFIG_FREERTOS_KERNEL_INTERRUPT_PRIORITY'}, sub {printf("#define configKERNEL_INTERRUPT_PRIORITY ( %d )\n", shift)});
+value($flags{'CONFIG_FREERTOS_MAX_SYSCALL_INTERRUPT_PRIORITY'}, sub {printf("#define configMAX_SYSCALL_INTERRUPT_PRIORITY ( %d )\n", shift)});
+say "#define INCLUDE_vTaskPrioritySet ".yn($flags{'CONFIG_FREERTOS_INCLUDE_VTASKPRIORITYSET'});
+say "#define INCLUDE_uxTaskPriorityGet ".yn($flags{'CONFIG_FREERTOS_INCLUDE_UXTASKPRIORITYGET'});
+say "#define INCLUDE_vTaskDelete ".yn($flags{'CONFIG_FREERTOS_INCLUDE_VTASKDELETE'});
+say "#define INCLUDE_vTaskSuspend ".yn($flags{'CONFIG_FREERTOS_INCLUDE_VTASKSUSPEND'});
+say "#define INCLUDE_vTaskDelayUntil ".yn($flags{'CONFIG_FREERTOS_INCLUDE_VTASKDELAYUNTIL'});
+say "#define INCLUDE_vTaskDelay ".yn($flags{'CONFIG_FREERTOS_INCLUDE_VTASKDELAY'});
+
+say "";
+say "#endif /* FREERTOS_CONFIG_H */";
