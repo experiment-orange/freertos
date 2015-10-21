@@ -2,10 +2,13 @@
 
 all : libfreertos.a
 
+provides conflicts :
+	@echo freertos
+
 check checkdepends depends makedepends :
 
 options :
-	echo !strip
+	@echo !strip
 
 SOURCE_DIR := ../freertos-src/FreeRTOS/Source
 DESTDIR ?= /
