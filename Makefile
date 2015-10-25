@@ -14,6 +14,7 @@ SOURCE_DIR := ../freertos-src/FreeRTOS/Source
 DESTDIR ?= /
 
 CFLAGS += -I. -I${SOURCE_DIR}/include
+CFLAGS += -MT $@ -MD -MP -MF $@.Td 
 SYSROOT := $(shell ${CC} ${CFLAGS} -print-sysroot)
 MULTIOS := $(shell ${CC} ${CFLAGS} -print-multi-os-directory)
 
@@ -26,8 +27,11 @@ ALL_OBJECTS := $(addprefix ${SOURCE_DIR}/,croutine.o event_groups.o list.o queue
 FreeRTOSConfig.h : ../.config
 	@./generator <$^ >$@
 
-%.o : FreeRTOSConfig.h %.c
+%.o.d : FreeRTOSConfig.h ;
+
+%.o : %.c %.o.d
 	${CC} ${CFLAGS} -c -o $@ $<
+	mv $@.Td $@.d
 
 libfreertos.a : ${ALL_OBJECTS}
 	${AR} -cr $@ $^
@@ -39,3 +43,5 @@ install : libfreertos.a
 	install -m644 -t ${DESTDIR}${SYSROOT}/lib/${MULTIOS} $<
 	install -m755 -d ${DESTDIR}${SYSROOT}/include
 	install -m644 -t ${DESTDIR}${SYSROOT}/include ${ALL_INCLUDES}
+
+-include $(addsuffix .d, ${ALL_OBJECTS})
