@@ -1,12 +1,8 @@
 include lib.mk
 
+.PHONY : all install
+
 all : libfreertos.a
-
-provides conflicts :
-	@echo freertos
-
-options :
-	@echo !strip
 
 SOURCE_DIR := ../freertos-src/FreeRTOS/Source
 

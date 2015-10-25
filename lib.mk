@@ -3,13 +3,6 @@
 # > practice; so for compatibility, you must explicitly request it.
 .DELETE_ON_ERROR :
 
-# These targets have to be always re-made
-.PHONY : all install provides conflicts check checkdepends depends makedepends options
-
-# These targets are optional and their output supplements PKGBUILD
-# They must exist though. It is OK to customize any of them in your Makefile
-provides conflicts check checkdepends depends makedepends options :
-
 # DESTDIR is respected, when figuring out where to install the targets
 DESTDIR ?= /
 
